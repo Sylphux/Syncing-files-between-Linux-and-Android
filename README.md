@@ -47,7 +47,7 @@ We are now done with the PC side. We only need to do it on the smartphone now.
 
 ## Step 4 : Setup things on the phone
 
-- Install rclone and cronie on termux : `pkg install rclone cronie`
+- Install rclone and cronie on termux : `pkg install rclone cron`
 - Allow termux to access your android files with `termux-setup-storage`. This should open an android permission setup thing. Allow access to files. Android files can now be accessed from thje "storage" folder located at home.
 - You can now choose where to sync your files from there. We will choose ~/storage/documents/Obsidian
 

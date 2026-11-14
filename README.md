@@ -1,10 +1,10 @@
 # How to sync Files between Linux and your Android phone via a drive service
 
-For this tutorial we will use a linux PC and an android phone. In the end, we will be able to synchronize automatically files (in our case, an obsidian vault) between a PC and aSmartphone via multiple drive types.
+For this tutorial we will use a linux PC and an android phone. In the end, we will be able to synchronize automatically files (in our case, an obsidian vault) between a PC and a Smartphone via multiple drive types.
 
 **Requirements :** 
 
-- Have a drive service compatible with rclone
+- Have a drive service compatible with rclone (there a a loooot, including sftp, google drive, etc...)
 - Have an android phone
 - Have a linux PC
 - Have a folder you want to start syncing on your PC (or phone, but we'll start from a pc in this tutorial.) Here, it will be : ~/Documents/Obsidian/Vault
@@ -31,6 +31,8 @@ Make your first sync with :
 rclone bisync ~/Documents/Obsidian gdrive:yourremotepath/Obsidian/ --resilient --recover --max-lock 2m --conflict-resolve newer --resync
 ```
 
+Note : Resync here is important. When you sync a new device or there has been some changes, sometimes you need to specify --resync for it to work. The other flags are just convenient and resolve a lot of issues on their own.
+
 After that verify if all files have been correctly synced to your drive. If it's good, then you can setup a cronjob to run every x minutes automatically.
 
 Open `crontab -e` and add this task :
@@ -39,27 +41,29 @@ Open `crontab -e` and add this task :
 */10 * * * * rclone bisync ~/Documents/Obsidian/Vault/ gdrive:yourpath/Obsidian --resilient --recover --max-lock 2m --conflict-resolve newer
 ```
 
-It's almost the same command as above but we wont use the --resync flag in it. This is setup to run every 10 minutes.
+> If crontab is not working, you will need to install cronie and enable it. On arch linux : `sudo pacman -S cronie && sudo systemctl enable crond`
+
+It's almost the same command as above but we wont use the --resync flag in it (use it again when the sync breaks, it can sometimes happend for different reasons). This is set up to run every 10 minutes.
 
 We are now done with the PC side. We only need to do it on the smartphone now.
 
-> If crontab is not working, you will need to install cronie and enable it. On arch linux : `sudo pacman -S cronie && sudo systemctl enable crond`
-
 ## Step 4 : Setup things on the phone
 
-- Install rclone and cronie on termux : `pkg install rclone cron`
+- Install rclone and cronie on termux : `pkg install rclone cronie`
 - Allow termux to access your android files with `termux-setup-storage`. This should open an android permission setup thing. Allow access to files. Android files can now be accessed from thje "storage" folder located at home.
-- You can now choose where to sync your files from there. We will choose ~/storage/documents/Obsidian
+- Also disable battery optimisations for the termux app so it can run in the background
+
+You can now choose where to sync your files from there. We will choose a new empty folder : ~/storage/documents/Obsidian
 
 Time to try to sync files on your smartphone :
 
-Make your first sync with :
+Make your *first* sync with :
 
 ```shell
 rclone bisync ~/storage/documents/Obsidian gdrive:yourremotepath/Obsidian/ --resilient --recover --max-lock 2m --conflict-resolve newer --resync
 ```
 
-It will be a bit long depending on how many files you have to sync. 
+It can be a bit long depending on how many files you have to sync. 
 
 If it all goes well, we will setup a cronjob on your termux to do it automatically from now on !
 
@@ -77,7 +81,7 @@ fi
 - Now reload your shell : `source ~/.bashrc`
 - See if cronie has started with `pgrep -l crond`. If you see a number like 12345, it worked.
 
-- Now all you have to do is setup the task. Go `crontab -e` and paste this (dont forget to edit the paths according to your situation):
+- Now all you have to do is setup the task to run as often as you want. Go `crontab -e` and paste this (dont forget to edit the paths according to your situation):
 
 ```shell
 */10 * * * * rclone bisync ~/storage/documents/Obsidian gdrive:yourremotepath/Obsidian/ --resilient --recover --max-lock 2m --conflict-resolve newer
@@ -86,3 +90,9 @@ fi
 ## And voilà, you're set.
 
 Of course you will maybe encounter issues depending on your situation, but this is the way I did it and it's working really well for me. I just wanted to share this, hope i helped !
+
+Some notes :
+
+- Proton drive doesnt work well. Don't bother trying it.
+- There a lot of other sync types to do with rclone, take some time looking for what you want in the manual
+- The official up to date version of Termux is not on the Play store. You have to get it from an official source (look it up)
